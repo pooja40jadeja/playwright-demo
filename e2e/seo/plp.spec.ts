@@ -1,16 +1,10 @@
 import {expect, type Page, test} from '@playwright/test'
+import {testUrls, expectedHreflangCountries, expectedHreflangUrlsPlp} from "../../testdata/seoTestdata";
+import CommonPage from "../../src/CommonPage";
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('https://en.zalando.de/clothing/');
+  await page.goto(testUrls.plp);
 });
-
-const expectedHreflangCountries = ['en-de', 'en-gb', 'en-ie'];
-const expectedHreflangUrls =
-    [
-      'https://en.zalando.de/clothing/',
-      'https://www.zalando.co.uk/clothing/',
-      'https://www.zalando.ie/clothing/'
-    ];
 
 test.describe('PLP SEO Tests', () => {
   test('has only one h1 tag', async ({page}) => {
@@ -30,7 +24,7 @@ test.describe('PLP SEO Tests', () => {
   });
 
   test('hreflang cluster includes correct countries', async ({page}) => {
-    expect(await getHrefCountries(page)).toEqual(expectedHreflangCountries);
+    expect(await CommonPage.getHrefCountries(page)).toEqual(expectedHreflangCountries);
   });
 
   test('hreflang cluster includes correct domain equivalents on PLPs', async ({page}) => {
@@ -39,7 +33,7 @@ test.describe('PLP SEO Tests', () => {
         hreflangs.map(async (el) =>
             decodeURIComponent(await el.getAttribute('href')),
         ));
-    expect(actualHreflangUrls).toEqual(expectedHreflangUrls);
+    expect(actualHreflangUrls).toEqual(expectedHreflangUrlsPlp);
   });
 });
 
@@ -47,12 +41,5 @@ async function getAltTagsForImages(page: Page) {
   const images = await page.locator('[data-entity-id^="ern:product::"] img').all();
   return Promise.all(
       images.map(async (image) => image.getAttribute('alt')),
-  );
-}
-
-async function getHrefCountries(page: Page) {
-  const hreflangElements = await page.locator('link[rel="alternate"]').all();
-  return Promise.all(
-      hreflangElements.map(async (image) => image.getAttribute('hreflang')),
   );
 }
